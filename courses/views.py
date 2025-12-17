@@ -1,7 +1,5 @@
 from django.shortcuts import get_object_or_404, render
-
 from .models import Course, Subject, Teacher
-
 
 def home(request):
     courses = (
@@ -17,11 +15,9 @@ def home(request):
         {"courses": courses, "teachers": teachers, "subjects": subjects},
     )
 
-
 def about(request):
     teachers = Teacher.objects.filter(is_active=True)
     return render(request, "edukate/about.html", {"teachers": teachers})
-
 
 def course_list(request):
     courses = Course.objects.select_related("subject", "owner").prefetch_related(
@@ -36,7 +32,6 @@ def course_list(request):
         "edukate/course.html",
         {"courses": courses, "subjects": subjects, "active_subject": subject_slug},
     )
-
 
 def course_detail(request, slug: str):
     course = get_object_or_404(
@@ -65,19 +60,15 @@ def course_detail(request, slug: str):
         },
     )
 
-
 def contact(request):
     return render(request, "edukate/contact.html")
-
 
 def features(request):
     return render(request, "edukate/feature.html")
 
-
 def team(request):
     teachers = Teacher.objects.filter(is_active=True)
     return render(request, "edukate/team.html", {"teachers": teachers})
-
 
 def testimonials(request):
     return render(request, "edukate/testimonial.html")

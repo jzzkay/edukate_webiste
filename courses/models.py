@@ -17,7 +17,6 @@ class Teacher(models.Model):
     def __str__(self) -> str:
         return self.full_name
 
-
 class Subject(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True)
@@ -27,7 +26,6 @@ class Subject(models.Model):
 
     def __str__(self) -> str:
         return self.title
-
 
 class Course(models.Model):
     owner = models.ForeignKey(
@@ -47,7 +45,6 @@ class Course(models.Model):
     def __str__(self) -> str:
         return self.title
 
-
 class Module(models.Model):
     course = models.ForeignKey(
         Course, related_name="modules", on_delete=models.CASCADE
@@ -57,7 +54,6 @@ class Module(models.Model):
 
     def __str__(self) -> str:
         return self.title
-
 
 class Content(models.Model):
     module = models.ForeignKey(
@@ -74,7 +70,6 @@ class Content(models.Model):
     def __str__(self) -> str:
         return f"{self.module.title} content"
 
-
 class ItemBase(models.Model):
     owner = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200)
@@ -87,18 +82,14 @@ class ItemBase(models.Model):
     def __str__(self) -> str:
         return self.title
 
-
 class Text(ItemBase):
     content = models.TextField()
-
 
 class File(ItemBase):
     file = models.FileField(upload_to="files")
 
-
 class Video(ItemBase):
     url = models.URLField()
-
 
 class Image(ItemBase):
     image = models.ImageField(upload_to="images")
