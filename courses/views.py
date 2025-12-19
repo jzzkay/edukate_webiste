@@ -1,5 +1,15 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from .models import Course, Subject, Teacher
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth.models import User
+from .forms import RegisterForm
 
 def home(request):
     courses = (
@@ -72,3 +82,56 @@ def team(request):
 
 def testimonials(request):
     return render(request, "edukate/testimonial.html")
+
+def register_view(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            message = render_to_string('email_verification.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': uid,
+                'token': token,
+            })
+            mail_subject = 'Activate your Edukate account'
+            email = EmailMessage(mail_subject, message, to=[form.cleaned_data.get('email')])
+            email.send()
+            return render(request, 'check_email.html')
+    else:
+        form = RegisterForm()
+    return render(request, 'register.html', {'form': form})
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return redirect('home')
+    else:
+        return render(request, 'activation_invalid.html')
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
