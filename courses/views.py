@@ -93,33 +93,40 @@ def register_view(request):
             current_site = get_current_site(request)
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            message = render_to_string('email_verification.html', {
+            message = render_to_string('edukate/email_verification.html', {
                 'user': user,
                 'domain': current_site.domain,
                 'uid': uid,
                 'token': token,
             })
             mail_subject = 'Activate your Edukate account'
-            email = EmailMessage(mail_subject, message, to=[form.cleaned_data.get('email')])
+            email = EmailMessage(
+                mail_subject,
+                message,
+                to=[form.cleaned_data.get('email')]
+            )
             email.send()
-            return render(request, 'check_email.html')
+            return render(request, 'edukate/check_email.html')
     else:
         form = RegisterForm()
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'edukate/register.html', {'form': form})
+
 
 def activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
+
     if user and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
         login(request, user)
-        return redirect('home')
+        return redirect('courses:home')
     else:
-        return render(request, 'activation_invalid.html')
+        return render(request, 'edukate/activation_invalid.html')
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -127,11 +134,12 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('home')
+            return redirect('courses:home')
     else:
         form = AuthenticationForm()
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'edukate/login.html', {'form': form})
+
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('courses:login')
