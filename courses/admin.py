@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Content, Course, File, Image, Module, Subject, Teacher, Text, Video
+from .models import Content, Course, Enrollment, File, Image, Module, Subject, Teacher, Text, Video
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
@@ -35,6 +35,13 @@ class ModuleAdmin(admin.ModelAdmin):
 class ContentAdmin(admin.ModelAdmin):
     list_display = ("module", "content_type", "object_id")
     list_filter = ("content_type",)
+
+@admin.register(Enrollment)
+class EnrollmentAdmin(admin.ModelAdmin):
+    list_display = ("user", "course", "enrolled_at")
+    list_filter = ("enrolled_at",)
+    search_fields = ("user__username", "course__title")
+    date_hierarchy = "enrolled_at"
 
 admin.site.register(Text)
 admin.site.register(File)

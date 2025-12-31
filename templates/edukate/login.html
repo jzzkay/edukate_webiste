@@ -1,28 +1,172 @@
+{% load static %}
 {% load socialaccount %}
-
+{% get_static_prefix as static_prefix %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <title>Login | Edukate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ static_prefix }}edukate/css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4e73df, #1cc88a);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: #fff;
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4e73df;
+        }
+        .btn-submit {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #4e73df;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-submit:hover {
+            background: #3b5ccc;
+        }
+        .social-login {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+        .social-login h6 {
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .social-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn-social {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-decoration: none;
+            text-align: center;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-social:hover {
+            background: #f8f9fa;
+            border-color: #4e73df;
+            color: #4e73df;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .register-link a {
+            color: #4e73df;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 10px 0;
+            color: #e74a3b;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Login</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Login</button>
-    </form>
-    <hr>
-<a href="{% url 'account_login' %}?process=login">Login with Email</a><br><br>
-
-<a href="{% provider_login_url 'google' %}">
-    Login with Google
-</a><br><br>
-
-<a href="{% provider_login_url 'github' %}">
-    Login with GitHub
-</a>
-
-    <p>Don't have an account? <a href="{% url 'courses:register' %}">Register</a></p>
+    <div class="login-container">
+        <h2>Login to Edukate</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="errorlist">{{ form.username.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="errorlist">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn-submit">Login</button>
+        </form>
+        <div class="social-login">
+            <h6>Or login with</h6>
+            <div class="social-buttons">
+                <a href="{% provider_login_url 'google' %}" class="btn-social">
+                    <i class="fab fa-google"></i> Google
+                </a>
+                <a href="{% provider_login_url 'github' %}" class="btn-social">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </div>
+        <div class="register-link">
+            Don't have an account? <a href="{% url 'courses:register' %}">Register</a>
+        </div>
+    </div>
 </body>
 </html>

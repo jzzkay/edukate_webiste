@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import Course, Subject, Teacher
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Course, Enrollment, Subject, Teacher
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.tokens import default_token_generator
@@ -59,6 +61,11 @@ def course_detail(request, slug: str):
     recent_courses = Course.objects.select_related("subject", "owner").order_by(
         "-created_at"
     )[:4]
+    is_enrolled = False
+    if request.user.is_authenticated:
+        is_enrolled = Enrollment.objects.filter(
+            user=request.user, course=course
+        ).exists()
     return render(
         request,
         "edukate/detail.html",
@@ -67,6 +74,7 @@ def course_detail(request, slug: str):
             "related_courses": related_courses,
             "subjects": subjects,
             "recent_courses": recent_courses,
+            "is_enrolled": is_enrolled,
         },
     )
 
@@ -84,6 +92,8 @@ def testimonials(request):
     return render(request, "edukate/testimonial.html")
 
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('courses:home')
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -129,12 +139,15 @@ def activate(request, uidb64, token):
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('courses:home')
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('courses:home')
+            next_url = request.GET.get('next', 'courses:home')
+            return redirect(next_url)
     else:
         form = AuthenticationForm()
     return render(request, 'edukate/login.html', {'form': form})
@@ -142,4 +155,17 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('courses:login')
+    return redirect('courses:home')
+
+@login_required
+def enroll_course(request, slug: str):
+    course = get_object_or_404(Course, slug=slug)
+    enrollment, created = Enrollment.objects.get_or_create(
+        user=request.user,
+        course=course
+    )
+    if created:
+        messages.success(request, f'Successfully enrolled in {course.title}')
+    else:
+        messages.info(request, f'You are already enrolled in {course.title}')
+    return redirect('courses:course_detail', slug=slug)

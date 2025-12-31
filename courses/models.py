@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -93,3 +94,15 @@ class Video(ItemBase):
 
 class Image(ItemBase):
     image = models.ImageField(upload_to="images")
+
+class Enrollment(models.Model):
+    user = models.ForeignKey(User, related_name="enrollments", on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name="enrollments", on_delete=models.CASCADE)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["user", "course"]
+        ordering = ["-enrolled_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.course.title}"

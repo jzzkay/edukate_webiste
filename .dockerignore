@@ -4,3 +4,11 @@ __pycache__
 *.pyd
 .env
 db.sqlite3
+venv/
+*.sqlite3
+.git
+.gitignore
+*.md
+.DS_Store
+staticfiles/
+media/

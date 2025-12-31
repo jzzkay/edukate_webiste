@@ -89,7 +89,11 @@
                     </div>
                     <a href="{% url 'courses:contact' %}" class="nav-item nav-link">Contact</a>
                 </div>
-                <a href="" class="btn btn-primary py-2 px-4 d-none d-lg-block">Join Us</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'courses:logout' %}" class="btn btn-primary py-2 px-4 d-none d-lg-block">Logout</a>
+                {% else %}
+                    <a href="{% url 'courses:login' %}" class="btn btn-primary py-2 px-4 d-none d-lg-block">Login</a>
+                {% endif %}
             </div>
         </nav>
     </div>
@@ -130,6 +134,16 @@
     <!-- Detail Start -->
     <div class="container-fluid py-5">
         <div class="container py-5">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
             <div class="row">
                 <div class="col-lg-8">
                     <div class="mb-5">
@@ -202,7 +216,15 @@
                         </div>
                         <h5 class="text-white py-3 px-4 m-0">Course Price: $199</h5>
                         <div class="py-3 px-4">
-                            <a class="btn btn-block btn-secondary py-3 px-5" href="">Enroll Now</a>
+                            {% if user.is_authenticated %}
+                                {% if is_enrolled %}
+                                    <a class="btn btn-block btn-success py-3 px-5" href="#">Already Enrolled</a>
+                                {% else %}
+                                    <a class="btn btn-block btn-secondary py-3 px-5" href="{% url 'courses:enroll_course' course.slug %}">Enroll Now</a>
+                                {% endif %}
+                            {% else %}
+                                <a class="btn btn-block btn-secondary py-3 px-5" href="{% url 'courses:login' %}?next={% url 'courses:course_detail' course.slug %}">Login to Enroll</a>
+                            {% endif %}
                         </div>
                     </div>
 

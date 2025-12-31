@@ -89,7 +89,11 @@
                     </div>
                     <a href="{% url 'courses:contact' %}" class="nav-item nav-link">Contact</a>
                 </div>
-                <a href="" class="btn btn-primary py-2 px-4 d-none d-lg-block">Join Us</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'courses:logout' %}" class="btn btn-primary py-2 px-4 d-none d-lg-block">Logout</a>
+                {% else %}
+                    <a href="{% url 'courses:login' %}" class="btn btn-primary py-2 px-4 d-none d-lg-block">Login</a>
+                {% endif %}
             </div>
         </nav>
     </div>
